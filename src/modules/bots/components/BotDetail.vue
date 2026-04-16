@@ -201,17 +201,6 @@
                           class="text-brand-400 hover:text-brand-700 leading-none ml-0.5">×</button>
                       </span>
                     </div>
-                    <!-- atajos TypeFeature -->
-                    <div class="flex flex-wrap gap-1.5 mb-2">
-                      <button v-for="feat in featureOptions" :key="feat.value" type="button"
-                        @click="toggleFeature(feat.value)"
-                        :class="['px-2 py-0.5 rounded-lg border text-xs font-semibold transition-all',
-                          form.features.includes(feat.value)
-                            ? 'bg-brand-100 border-brand-300 text-brand-700'
-                            : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300']">
-                        {{ feat.label }} <span class="font-mono opacity-60">·{{ feat.value }}</span>
-                      </button>
-                    </div>
                     <!-- input número custom -->
                     <div class="flex gap-2">
                       <input v-model.number="featureInput" type="number" placeholder="Número custom..."
