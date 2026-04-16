@@ -86,109 +86,105 @@
             </button>
             <Transition name="expand">
               <div v-if="infoOpen" class="px-4 pb-4 border-t border-gray-100">
-                <form @submit.prevent="submitBotInfo" class="space-y-4 pt-4">
+                <form @submit.prevent="submitBotInfo" class="space-y-3 pt-3">
 
-                  <!-- Nombre -->
-                  <div>
-                    <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">Nombre</label>
-                    <input v-model="form.name" type="text"
-                      class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent" />
-                  </div>
-
-                  <!-- País + Teléfono -->
-                  <div>
-                    <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">País · Teléfono</label>
-                    <div class="flex gap-2">
-                      <!-- Country dropdown -->
-                      <div class="relative" ref="countryDropdownRef">
-                        <button type="button" @click="countryOpen = !countryOpen"
-                          class="flex items-center gap-1.5 h-full px-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-400 whitespace-nowrap min-w-[110px] justify-between">
-                          <span class="flex items-center gap-1.5">
-                            <span class="text-lg leading-none">{{ selectedCountry?.flag ?? '🌍' }}</span>
-                            <span class="font-semibold text-gray-800">{{ selectedCountry?.dial ?? '—' }}</span>
-                          </span>
-                          <svg class="w-3.5 h-3.5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </button>
-                        <div v-if="countryOpen"
-                          class="absolute top-full left-0 mt-1 z-50 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden w-52">
-                          <div class="p-2 border-b border-gray-100">
-                            <input v-model="countrySearch" @click.stop type="text" placeholder="Buscar país..."
-                              class="w-full rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-brand-400" />
-                          </div>
-                          <div class="max-h-48 overflow-y-auto py-1">
-                            <button v-for="c in filteredCountries" :key="c.dial" type="button"
-                              @click="selectCountry(c)"
-                              :class="['w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-gray-50 transition-colors text-left',
-                                form.countryCode === c.dial ? 'bg-brand-50 text-brand-700' : 'text-gray-700']">
-                              <span class="text-lg leading-none">{{ c.flag }}</span>
-                              <span class="flex-1 font-medium">{{ c.name }}</span>
-                              <span class="text-xs text-gray-400 font-mono">{{ c.dial }}</span>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                      <!-- Phone input -->
-                      <input v-model="form.phone" type="text" placeholder="Número de teléfono"
-                        class="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent" />
-                    </div>
-                    <p v-if="selectedCountry" class="mt-1 text-[10px] text-gray-400">
-                      {{ selectedCountry.flag }} {{ selectedCountry.name }} · código <span class="font-mono">{{ selectedCountry.dial }}</span>
-                    </p>
-                  </div>
-
-                  <!-- Descripción -->
-                  <div>
-                    <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">Descripción</label>
-                    <textarea v-model="form.description" rows="2"
-                      class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent resize-none" />
-                  </div>
-
-                  <!-- URL imagen + preview -->
-                  <div>
-                    <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">URL de imagen</label>
-                    <div class="flex gap-2 items-center">
-                      <input v-model="form.image" type="text" placeholder="https://..."
-                        class="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent" />
-                      <div class="w-10 h-10 rounded-xl border border-gray-200 bg-gray-100 shrink-0 overflow-hidden flex items-center justify-center">
-                        <img v-if="form.image" :src="form.image" class="w-full h-full object-cover"
-                          @error="(e) => (e.target as HTMLImageElement).style.display = 'none'" />
-                        <svg v-else class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Row: agencyId + typeBot + active -->
-                  <div class="grid grid-cols-2 gap-3 items-end">
+                  <!-- Fila 1: Nombre + Descripción -->
+                  <div class="grid grid-cols-2 gap-3">
                     <div>
-                      <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">Agencia ID</label>
-                      <input v-model.number="form.agencyId" type="number" placeholder="—"
+                      <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">Nombre</label>
+                      <input v-model="form.name" type="text"
                         class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent" />
                     </div>
                     <div>
-                      <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">Tipo de bot</label>
-                      <select v-model.number="form.typeBot"
-                        class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent">
-                        <option v-for="opt in typeBotOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-                      </select>
+                      <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">Descripción</label>
+                      <input v-model="form.description" type="text"
+                        class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent" />
                     </div>
                   </div>
 
-                  <!-- Active toggle -->
-                  <div class="flex items-center gap-3">
-                    <button type="button" @click="form.active = !form.active"
-                      :class="['relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none',
-                        form.active ? 'bg-emerald-500' : 'bg-gray-200']">
-                      <span :class="['pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform duration-200',
-                        form.active ? 'translate-x-5' : 'translate-x-0']" />
-                    </button>
-                    <span class="text-sm font-semibold" :class="form.active ? 'text-emerald-600' : 'text-gray-400'">
-                      {{ form.active ? 'Activo' : 'Inactivo' }}
-                    </span>
+                  <!-- Fila 2: País+Teléfono | Imagen+preview -->
+                  <div class="grid grid-cols-2 gap-3">
+                    <!-- País + Teléfono -->
+                    <div>
+                      <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">País · Teléfono</label>
+                      <div class="flex gap-1.5">
+                        <div class="relative" ref="countryDropdownRef">
+                          <button type="button" @click="countryOpen = !countryOpen"
+                            class="flex items-center gap-1 h-full px-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-400 whitespace-nowrap justify-between">
+                            <span class="text-base leading-none">{{ selectedCountry?.flag ?? '🌍' }}</span>
+                            <span class="font-semibold text-gray-700 text-xs">{{ selectedCountry?.dial ?? '—' }}</span>
+                            <svg class="w-3 h-3 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                          <div v-if="countryOpen"
+                            class="absolute top-full left-0 mt-1 z-50 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden w-52">
+                            <div class="p-2 border-b border-gray-100">
+                              <input v-model="countrySearch" @click.stop type="text" placeholder="Buscar país..."
+                                class="w-full rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-brand-400" />
+                            </div>
+                            <div class="max-h-48 overflow-y-auto py-1">
+                              <button v-for="c in filteredCountries" :key="c.dial" type="button"
+                                @click="selectCountry(c)"
+                                :class="['w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 transition-colors text-left',
+                                  form.countryCode === c.dial ? 'bg-brand-50 text-brand-700' : 'text-gray-700']">
+                                <span class="text-base leading-none">{{ c.flag }}</span>
+                                <span class="flex-1 font-medium text-xs">{{ c.name }}</span>
+                                <span class="text-[11px] text-gray-400 font-mono">{{ c.dial }}</span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                        <input v-model="form.phone" type="text" placeholder="Teléfono"
+                          class="flex-1 min-w-0 rounded-xl border border-gray-200 bg-gray-50 px-2.5 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent" />
+                      </div>
+                      <p v-if="selectedCountry" class="mt-0.5 text-[10px] text-gray-400 truncate">
+                        {{ selectedCountry.flag }} {{ selectedCountry.name }}
+                      </p>
+                    </div>
+                    <!-- Imagen + preview -->
+                    <div>
+                      <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">URL imagen</label>
+                      <div class="flex gap-1.5 items-center">
+                        <input v-model="form.image" type="text" placeholder="https://..."
+                          class="flex-1 min-w-0 rounded-xl border border-gray-200 bg-gray-50 px-2.5 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent" />
+                        <div class="w-9 h-9 rounded-xl border border-gray-200 bg-gray-100 shrink-0 overflow-hidden flex items-center justify-center">
+                          <img v-if="form.image" :src="form.image" class="w-full h-full object-cover"
+                            @error="(e) => (e.target as HTMLImageElement).style.display = 'none'" />
+                          <svg v-else class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Fila 3: TipoBot + AgenciaID + Activo -->
+                  <div class="grid grid-cols-3 gap-3 items-end">
+                    <div>
+                      <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">Tipo de bot</label>
+                      <select v-model.number="form.typeBot"
+                        class="w-full rounded-xl border border-gray-200 bg-gray-50 px-2.5 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent">
+                        <option v-for="opt in typeBotOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">Agencia ID</label>
+                      <input v-model.number="form.agencyId" type="number" placeholder="—"
+                        class="w-full rounded-xl border border-gray-200 bg-gray-50 px-2.5 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent" />
+                    </div>
+                    <div class="flex items-center gap-2 pb-1">
+                      <button type="button" @click="form.active = !form.active"
+                        :class="['relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none',
+                          form.active ? 'bg-emerald-500' : 'bg-gray-200']">
+                        <span :class="['pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform duration-200',
+                          form.active ? 'translate-x-4' : 'translate-x-0']" />
+                      </button>
+                      <span class="text-xs font-semibold" :class="form.active ? 'text-emerald-600' : 'text-gray-400'">
+                        {{ form.active ? 'Activo' : 'Inactivo' }}
+                      </span>
+                    </div>
                   </div>
 
                   <!-- Features — array de números -->
