@@ -203,7 +203,7 @@
                     </div>
                     <!-- input número custom -->
                     <div class="flex gap-2">
-                      <input v-model.number="featureInput" type="number" placeholder="Número custom..."
+                      <input v-model.number="featureInput" type="number" placeholder="Nueva característica..."
                         @keydown.enter.prevent="addFeatureFromInput"
                         class="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent" />
                       <button type="button" @click="addFeatureFromInput"
@@ -614,12 +614,6 @@ const featureInput = ref<number | null>(null);
 function featureLabel(val: number): string {
   const match = featureOptions.find(f => f.value === val);
   return match ? `${match.label} · ${val}` : String(val);
-}
-
-function toggleFeature(val: number) {
-  const idx = form.features.indexOf(val);
-  if (idx === -1) form.features.push(val);
-  else form.features.splice(idx, 1);
 }
 
 function removeFeature(val: number) {
