@@ -85,40 +85,129 @@
               </svg>
             </button>
             <Transition name="expand">
-              <div v-if="infoOpen" class="px-4 pb-4 space-y-4 border-t border-gray-100">
-                <div class="grid grid-cols-2 gap-3 pt-3">
-                  <div class="bg-gray-50 rounded-xl p-3">
-                    <p class="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">App ID</p>
-                    <p class="text-sm font-semibold text-gray-700 font-mono">{{ bot.applicationId }}</p>
+              <div v-if="infoOpen" class="px-4 pb-4 border-t border-gray-100">
+                <!-- Editable form -->
+                <form @submit.prevent="submitBotInfo" class="space-y-4 pt-4">
+
+                  <!-- Row: name + phone -->
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">Nombre</label>
+                      <input v-model="form.name" type="text"
+                        class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent" />
+                    </div>
+                    <div>
+                      <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">Teléfono</label>
+                      <input v-model="form.phone" type="text"
+                        class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent" />
+                    </div>
                   </div>
-                  <div class="bg-gray-50 rounded-xl p-3">
-                    <p class="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">Agencia ID</p>
-                    <p class="text-sm font-semibold text-gray-700 font-mono">{{ bot.agencyId ?? '—' }}</p>
+
+                  <!-- Description -->
+                  <div>
+                    <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">Descripción</label>
+                    <textarea v-model="form.description" rows="2"
+                      class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent resize-none" />
                   </div>
-                  <div class="bg-gray-50 rounded-xl p-3">
-                    <p class="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">Idioma</p>
-                    <p class="text-sm font-semibold text-gray-700">{{ bot.hash?.language ?? '—' }}</p>
+
+                  <!-- Image URL -->
+                  <div>
+                    <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">URL de imagen</label>
+                    <input v-model="form.image" type="text" placeholder="https://..."
+                      class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent" />
                   </div>
-                  <div class="bg-gray-50 rounded-xl p-3">
-                    <p class="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">Moneda</p>
-                    <p class="text-sm font-semibold text-gray-700">{{ bot.hash?.currency ?? '—' }}</p>
+
+                  <!-- Row: countryCode + agencyId -->
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">Código de país</label>
+                      <input v-model="form.countryCode" type="text" placeholder="EC, CO, MX..."
+                        class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent" />
+                    </div>
+                    <div>
+                      <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">Agencia ID</label>
+                      <input v-model.number="form.agencyId" type="number" placeholder="—"
+                        class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent" />
+                    </div>
                   </div>
-                  <div class="bg-gray-50 rounded-xl p-3">
-                    <p class="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">Zona horaria</p>
-                    <p class="text-sm font-semibold text-gray-700">{{ bot.hash?.timeZone != null ? `UTC${bot.hash.timeZone >= 0 ? '+' : ''}${bot.hash.timeZone}` : '—' }}</p>
+
+                  <!-- Row: typeBot + active -->
+                  <div class="grid grid-cols-2 gap-3 items-end">
+                    <div>
+                      <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">Tipo de bot</label>
+                      <select v-model.number="form.typeBot"
+                        class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent">
+                        <option v-for="opt in typeBotOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                      </select>
+                    </div>
+                    <div class="flex items-center gap-3 pb-2">
+                      <button type="button" @click="form.active = !form.active"
+                        :class="['relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none',
+                          form.active ? 'bg-emerald-500' : 'bg-gray-200']">
+                        <span :class="['pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform duration-200',
+                          form.active ? 'translate-x-5' : 'translate-x-0']" />
+                      </button>
+                      <span class="text-sm font-semibold" :class="form.active ? 'text-emerald-600' : 'text-gray-400'">
+                        {{ form.active ? 'Activo' : 'Inactivo' }}
+                      </span>
+                    </div>
                   </div>
-                  <div class="bg-gray-50 rounded-xl p-3">
-                    <p class="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">Última actualización</p>
-                    <p class="text-sm font-semibold text-gray-700">{{ bot.updatedAt ? formatDate(bot.updatedAt) : '—' }}</p>
+
+                  <!-- Features -->
+                  <div>
+                    <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-2">Features</label>
+                    <div class="flex flex-wrap gap-2">
+                      <label v-for="feat in featureOptions" :key="feat.value"
+                        :class="['flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-semibold cursor-pointer transition-all select-none',
+                          form.features.includes(feat.value)
+                            ? 'bg-brand-50 border-brand-300 text-brand-700'
+                            : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300']">
+                        <input type="checkbox" class="sr-only" :value="feat.value" v-model="form.features" />
+                        {{ feat.label }}
+                      </label>
+                    </div>
                   </div>
-                </div>
-                <div v-if="bot.features?.length">
-                  <p class="text-[10px] text-gray-400 uppercase tracking-wide mb-2">Features activas</p>
-                  <div class="flex flex-wrap gap-1.5">
-                    <span v-for="f in bot.features" :key="f"
-                      class="px-2 py-0.5 bg-brand-50 border border-brand-100 text-brand-600 text-xs font-mono font-semibold rounded-lg">{{ f }}</span>
+
+                  <!-- Read-only system info -->
+                  <div class="grid grid-cols-3 gap-2 pt-1 border-t border-gray-100">
+                    <div class="bg-gray-50 rounded-xl p-2.5">
+                      <p class="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">App ID</p>
+                      <p class="text-xs font-semibold text-gray-600 font-mono">{{ bot.applicationId }}</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-2.5">
+                      <p class="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">Idioma (hash)</p>
+                      <p class="text-xs font-semibold text-gray-600">{{ bot.hash?.language ?? '—' }}</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-2.5">
+                      <p class="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">Actualizado</p>
+                      <p class="text-xs font-semibold text-gray-600">{{ bot.updatedAt ? formatDate(bot.updatedAt) : '—' }}</p>
+                    </div>
                   </div>
-                </div>
+
+                  <!-- Error -->
+                  <div v-if="botsStore.error" class="flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600 font-medium">
+                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {{ botsStore.error }}
+                  </div>
+
+                  <!-- Save button -->
+                  <button type="submit" :disabled="botsStore.savingBot"
+                    :class="['w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all',
+                      botsStore.saveBotSuccess
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-brand-600 hover:bg-brand-700 text-white disabled:opacity-60 disabled:cursor-not-allowed']">
+                    <svg v-if="botsStore.savingBot" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    <svg v-else-if="botsStore.saveBotSuccess" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                    </svg>
+                    {{ botsStore.savingBot ? 'Guardando…' : botsStore.saveBotSuccess ? 'Guardado' : 'Actualizar información' }}
+                  </button>
+                </form>
               </div>
             </Transition>
           </div>
@@ -360,9 +449,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { useBotsStore } from '@/stores/bots.store';
 import { TypeBot } from '@/types/bot.types';
+import { TypeFeature } from '@/common/glob/type/type_feature';
 import HashEditor from './HashEditor.vue';
 
 const botsStore = useBotsStore();
@@ -370,6 +460,64 @@ const bot       = computed(() => botsStore.selected);
 const statsData = computed(() => botsStore.stats?.stats ?? null);
 const infoOpen  = ref(false);
 const activeTab = ref<'config' | 'stats'>('config');
+
+// ── Bot info form ─────────────────────────────────────────────────────────────
+const form = reactive({
+  name:        '',
+  phone:       '',
+  description: '',
+  image:       '',
+  countryCode: '',
+  agencyId:    null as number | null,
+  typeBot:     TypeBot.WHATSAPP as number,
+  active:      true,
+  features:    [] as number[],
+});
+
+function resetForm() {
+  const b = bot.value;
+  if (!b) return;
+  form.name        = b.name ?? '';
+  form.phone       = b.phone ?? '';
+  form.description = b.description ?? '';
+  form.image       = b.image ?? '';
+  form.countryCode = b.countryCode ?? '';
+  form.agencyId    = b.agencyId ?? null;
+  form.typeBot     = b.typeBot;
+  form.active      = b.active;
+  form.features    = b.features ? [...b.features] : [];
+}
+
+watch(() => bot.value?.id, () => resetForm(), { immediate: true });
+
+async function submitBotInfo() {
+  await botsStore.saveBot({
+    name:        form.name,
+    phone:       form.phone,
+    description: form.description,
+    image:       form.image,
+    countryCode: form.countryCode,
+    agencyId:    form.agencyId ?? undefined,
+    typeBot:     form.typeBot,
+    active:      form.active,
+    features:    form.features,
+  });
+}
+
+const typeBotOptions = [
+  { value: TypeBot.WHATSAPP, label: '💬 WhatsApp' },
+  { value: TypeBot.TELEGRAM, label: '✈️ Telegram' },
+  { value: TypeBot.ZENDESK,  label: '🎫 Zendesk' },
+];
+
+const featureOptions = [
+  { value: TypeFeature.PAYMENT,     label: 'Pago' },
+  { value: TypeFeature.TRAVEL,      label: 'Viaje' },
+  { value: TypeFeature.CALL_CENTER, label: 'Call Center' },
+  { value: TypeFeature.STORE,       label: 'Tienda' },
+  { value: TypeFeature.APP,         label: 'App' },
+  { value: TypeFeature.BOT,         label: 'Bot' },
+];
 
 const tabs = [
   { id: 'config', label: 'Configuración', iconPath: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },

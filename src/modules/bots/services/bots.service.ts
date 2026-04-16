@@ -4,6 +4,18 @@ import type { Bot, BotListItem, HashDto } from '@/types/bot.types';
 
 const { ID_DEVICE, APPLICATION_ID } = APP_CONFIG;
 
+export interface BotUpdatePayload {
+  countryCode?: string;
+  phone?: string;
+  name?: string;
+  description?: string;
+  image?: string;
+  typeBot?: number;
+  active?: boolean;
+  features?: number[];
+  agencyId?: number | null;
+}
+
 export const botsService = {
   async getMyBots(userId: number): Promise<BotListItem[]> {
     const { data } = await botHttp.get(
@@ -17,6 +29,14 @@ export const botsService = {
       `/admin/bot/${id}/${APPLICATION_ID}/${userId}/${ID_DEVICE}`,
     );
     return data.bot ?? null;
+  },
+
+  async updateBot(id: number, userId: number, payload: BotUpdatePayload): Promise<boolean> {
+    const { data } = await botHttp.patch(
+      `/admin/bot/${id}/${APPLICATION_ID}/${userId}/${ID_DEVICE}`,
+      { bot: payload },
+    );
+    return data.errorCode === 0;
   },
 
   async updateHash(id: number, userId: number, hash: Partial<HashDto>): Promise<boolean> {
