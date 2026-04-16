@@ -86,53 +86,89 @@
             </button>
             <Transition name="expand">
               <div v-if="infoOpen" class="px-4 pb-4 border-t border-gray-100">
-                <!-- Editable form -->
                 <form @submit.prevent="submitBotInfo" class="space-y-4 pt-4">
 
-                  <!-- Row: name + phone -->
-                  <div class="grid grid-cols-2 gap-3">
-                    <div>
-                      <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">Nombre</label>
-                      <input v-model="form.name" type="text"
-                        class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent" />
-                    </div>
-                    <div>
-                      <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">Teléfono</label>
-                      <input v-model="form.phone" type="text"
-                        class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent" />
-                    </div>
+                  <!-- Nombre -->
+                  <div>
+                    <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">Nombre</label>
+                    <input v-model="form.name" type="text"
+                      class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent" />
                   </div>
 
-                  <!-- Description -->
+                  <!-- País + Teléfono -->
+                  <div>
+                    <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">País · Teléfono</label>
+                    <div class="flex gap-2">
+                      <!-- Country dropdown -->
+                      <div class="relative" ref="countryDropdownRef">
+                        <button type="button" @click="countryOpen = !countryOpen"
+                          class="flex items-center gap-1.5 h-full px-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-400 whitespace-nowrap min-w-[110px] justify-between">
+                          <span class="flex items-center gap-1.5">
+                            <span class="text-lg leading-none">{{ selectedCountry?.flag ?? '🌍' }}</span>
+                            <span class="font-semibold text-gray-800">{{ selectedCountry?.dial ?? '—' }}</span>
+                          </span>
+                          <svg class="w-3.5 h-3.5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                        <div v-if="countryOpen"
+                          class="absolute top-full left-0 mt-1 z-50 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden w-52">
+                          <div class="p-2 border-b border-gray-100">
+                            <input v-model="countrySearch" @click.stop type="text" placeholder="Buscar país..."
+                              class="w-full rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-brand-400" />
+                          </div>
+                          <div class="max-h-48 overflow-y-auto py-1">
+                            <button v-for="c in filteredCountries" :key="c.dial" type="button"
+                              @click="selectCountry(c)"
+                              :class="['w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-gray-50 transition-colors text-left',
+                                form.countryCode === c.dial ? 'bg-brand-50 text-brand-700' : 'text-gray-700']">
+                              <span class="text-lg leading-none">{{ c.flag }}</span>
+                              <span class="flex-1 font-medium">{{ c.name }}</span>
+                              <span class="text-xs text-gray-400 font-mono">{{ c.dial }}</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <!-- Phone input -->
+                      <input v-model="form.phone" type="text" placeholder="Número de teléfono"
+                        class="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent" />
+                    </div>
+                    <p v-if="selectedCountry" class="mt-1 text-[10px] text-gray-400">
+                      {{ selectedCountry.flag }} {{ selectedCountry.name }} · código <span class="font-mono">{{ selectedCountry.dial }}</span>
+                    </p>
+                  </div>
+
+                  <!-- Descripción -->
                   <div>
                     <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">Descripción</label>
                     <textarea v-model="form.description" rows="2"
                       class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent resize-none" />
                   </div>
 
-                  <!-- Image URL -->
+                  <!-- URL imagen + preview -->
                   <div>
                     <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">URL de imagen</label>
-                    <input v-model="form.image" type="text" placeholder="https://..."
-                      class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent" />
+                    <div class="flex gap-2 items-center">
+                      <input v-model="form.image" type="text" placeholder="https://..."
+                        class="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent" />
+                      <div class="w-10 h-10 rounded-xl border border-gray-200 bg-gray-100 shrink-0 overflow-hidden flex items-center justify-center">
+                        <img v-if="form.image" :src="form.image" class="w-full h-full object-cover"
+                          @error="(e) => (e.target as HTMLImageElement).style.display = 'none'" />
+                        <svg v-else class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
 
-                  <!-- Row: countryCode + agencyId -->
-                  <div class="grid grid-cols-2 gap-3">
-                    <div>
-                      <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">Código de país</label>
-                      <input v-model="form.countryCode" type="text" placeholder="EC, CO, MX..."
-                        class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent" />
-                    </div>
+                  <!-- Row: agencyId + typeBot + active -->
+                  <div class="grid grid-cols-2 gap-3 items-end">
                     <div>
                       <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">Agencia ID</label>
                       <input v-model.number="form.agencyId" type="number" placeholder="—"
                         class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent" />
                     </div>
-                  </div>
-
-                  <!-- Row: typeBot + active -->
-                  <div class="grid grid-cols-2 gap-3 items-end">
                     <div>
                       <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-1">Tipo de bot</label>
                       <select v-model.number="form.typeBot"
@@ -140,43 +176,62 @@
                         <option v-for="opt in typeBotOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                       </select>
                     </div>
-                    <div class="flex items-center gap-3 pb-2">
-                      <button type="button" @click="form.active = !form.active"
-                        :class="['relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none',
-                          form.active ? 'bg-emerald-500' : 'bg-gray-200']">
-                        <span :class="['pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform duration-200',
-                          form.active ? 'translate-x-5' : 'translate-x-0']" />
-                      </button>
-                      <span class="text-sm font-semibold" :class="form.active ? 'text-emerald-600' : 'text-gray-400'">
-                        {{ form.active ? 'Activo' : 'Inactivo' }}
-                      </span>
-                    </div>
                   </div>
 
-                  <!-- Features -->
+                  <!-- Active toggle -->
+                  <div class="flex items-center gap-3">
+                    <button type="button" @click="form.active = !form.active"
+                      :class="['relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none',
+                        form.active ? 'bg-emerald-500' : 'bg-gray-200']">
+                      <span :class="['pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform duration-200',
+                        form.active ? 'translate-x-5' : 'translate-x-0']" />
+                    </button>
+                    <span class="text-sm font-semibold" :class="form.active ? 'text-emerald-600' : 'text-gray-400'">
+                      {{ form.active ? 'Activo' : 'Inactivo' }}
+                    </span>
+                  </div>
+
+                  <!-- Features — array de números -->
                   <div>
                     <label class="block text-[10px] text-gray-400 uppercase tracking-wide mb-2">Features</label>
-                    <div class="flex flex-wrap gap-2">
-                      <label v-for="feat in featureOptions" :key="feat.value"
-                        :class="['flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-semibold cursor-pointer transition-all select-none',
+                    <!-- chips activos -->
+                    <div v-if="form.features.length" class="flex flex-wrap gap-1.5 mb-2">
+                      <span v-for="f in form.features" :key="f"
+                        class="inline-flex items-center gap-1 px-2 py-0.5 bg-brand-50 border border-brand-200 text-brand-700 text-xs font-mono font-semibold rounded-lg">
+                        {{ featureLabel(f) }}
+                        <button type="button" @click="removeFeature(f)"
+                          class="text-brand-400 hover:text-brand-700 leading-none ml-0.5">×</button>
+                      </span>
+                    </div>
+                    <!-- atajos TypeFeature -->
+                    <div class="flex flex-wrap gap-1.5 mb-2">
+                      <button v-for="feat in featureOptions" :key="feat.value" type="button"
+                        @click="toggleFeature(feat.value)"
+                        :class="['px-2 py-0.5 rounded-lg border text-xs font-semibold transition-all',
                           form.features.includes(feat.value)
-                            ? 'bg-brand-50 border-brand-300 text-brand-700'
+                            ? 'bg-brand-100 border-brand-300 text-brand-700'
                             : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300']">
-                        <input type="checkbox" class="sr-only" :value="feat.value" v-model="form.features" />
-                        {{ feat.label }}
-                      </label>
+                        {{ feat.label }} <span class="font-mono opacity-60">·{{ feat.value }}</span>
+                      </button>
+                    </div>
+                    <!-- input número custom -->
+                    <div class="flex gap-2">
+                      <input v-model.number="featureInput" type="number" placeholder="Número custom..."
+                        @keydown.enter.prevent="addFeatureFromInput"
+                        class="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent" />
+                      <button type="button" @click="addFeatureFromInput"
+                        class="px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold transition-colors">
+                        + Agregar
+                      </button>
                     </div>
                   </div>
 
-                  <!-- Read-only system info -->
+                  <!-- Info de solo lectura -->
                   <div class="grid grid-cols-3 gap-2 pt-1 border-t border-gray-100">
-                    <div class="bg-gray-50 rounded-xl p-2.5">
-                      <p class="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">App ID</p>
-                      <p class="text-xs font-semibold text-gray-600 font-mono">{{ bot.applicationId }}</p>
-                    </div>
-                    <div class="bg-gray-50 rounded-xl p-2.5">
-                      <p class="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">Idioma (hash)</p>
-                      <p class="text-xs font-semibold text-gray-600">{{ bot.hash?.language ?? '—' }}</p>
+                    <div class="bg-gray-50 rounded-xl p-2.5 col-span-2">
+                      <p class="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">Aplicativo</p>
+                      <p class="text-xs font-semibold text-gray-700">{{ applicationName(bot.applicationId) }}</p>
+                      <p class="text-[10px] text-gray-400 font-mono">{{ bot.applicationId }}</p>
                     </div>
                     <div class="bg-gray-50 rounded-xl p-2.5">
                       <p class="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">Actualizado</p>
@@ -192,7 +247,7 @@
                     {{ botsStore.error }}
                   </div>
 
-                  <!-- Save button -->
+                  <!-- Botón guardar -->
                   <button type="submit" :disabled="botsStore.savingBot"
                     :class="['w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all',
                       botsStore.saveBotSuccess
@@ -449,10 +504,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import { useBotsStore } from '@/stores/bots.store';
 import { TypeBot } from '@/types/bot.types';
 import { TypeFeature } from '@/common/glob/type/type_feature';
+import typeApplication from '@/common/glob/id/id_application';
 import HashEditor from './HashEditor.vue';
 
 const botsStore = useBotsStore();
@@ -504,12 +560,64 @@ async function submitBotInfo() {
   });
 }
 
+// ── TypeBot options ───────────────────────────────────────────────────────────
 const typeBotOptions = [
   { value: TypeBot.WHATSAPP, label: '💬 WhatsApp' },
   { value: TypeBot.TELEGRAM, label: '✈️ Telegram' },
   { value: TypeBot.ZENDESK,  label: '🎫 Zendesk' },
 ];
 
+// ── Country selector ──────────────────────────────────────────────────────────
+interface Country { flag: string; name: string; dial: string }
+
+const COUNTRIES: Country[] = [
+  { flag: '🇪🇨', name: 'Ecuador',        dial: '+593' },
+  { flag: '🇨🇴', name: 'Colombia',       dial: '+57'  },
+  { flag: '🇲🇽', name: 'México',         dial: '+52'  },
+  { flag: '🇵🇪', name: 'Perú',           dial: '+51'  },
+  { flag: '🇨🇱', name: 'Chile',          dial: '+56'  },
+  { flag: '🇧🇴', name: 'Bolivia',        dial: '+591' },
+  { flag: '🇭🇳', name: 'Honduras',       dial: '+504' },
+  { flag: '🇺🇸', name: 'Estados Unidos', dial: '+1'   },
+  { flag: '🇦🇷', name: 'Argentina',      dial: '+54'  },
+  { flag: '🇻🇪', name: 'Venezuela',      dial: '+58'  },
+  { flag: '🇵🇦', name: 'Panamá',         dial: '+507' },
+  { flag: '🇨🇷', name: 'Costa Rica',     dial: '+506' },
+  { flag: '🇬🇹', name: 'Guatemala',      dial: '+502' },
+  { flag: '🇩🇴', name: 'Rep. Dominicana',dial: '+1829'},
+  { flag: '🇪🇸', name: 'España',         dial: '+34'  },
+];
+
+const countryOpen       = ref(false);
+const countrySearch     = ref('');
+const countryDropdownRef = ref<HTMLElement | null>(null);
+
+const filteredCountries = computed(() =>
+  COUNTRIES.filter(c =>
+    c.name.toLowerCase().includes(countrySearch.value.toLowerCase()) ||
+    c.dial.includes(countrySearch.value),
+  ),
+);
+
+const selectedCountry = computed(() =>
+  COUNTRIES.find(c => c.dial === form.countryCode) ?? null,
+);
+
+function selectCountry(c: Country) {
+  form.countryCode = c.dial;
+  countryOpen.value  = false;
+  countrySearch.value = '';
+}
+
+function onClickOutside(e: MouseEvent) {
+  if (countryDropdownRef.value && !countryDropdownRef.value.contains(e.target as Node)) {
+    countryOpen.value = false;
+  }
+}
+onMounted(() => document.addEventListener('mousedown', onClickOutside));
+onUnmounted(() => document.removeEventListener('mousedown', onClickOutside));
+
+// ── Features ──────────────────────────────────────────────────────────────────
 const featureOptions = [
   { value: TypeFeature.PAYMENT,     label: 'Pago' },
   { value: TypeFeature.TRAVEL,      label: 'Viaje' },
@@ -518,6 +626,37 @@ const featureOptions = [
   { value: TypeFeature.APP,         label: 'App' },
   { value: TypeFeature.BOT,         label: 'Bot' },
 ];
+
+const featureInput = ref<number | null>(null);
+
+function featureLabel(val: number): string {
+  const match = featureOptions.find(f => f.value === val);
+  return match ? `${match.label} · ${val}` : String(val);
+}
+
+function toggleFeature(val: number) {
+  const idx = form.features.indexOf(val);
+  if (idx === -1) form.features.push(val);
+  else form.features.splice(idx, 1);
+}
+
+function removeFeature(val: number) {
+  const idx = form.features.indexOf(val);
+  if (idx !== -1) form.features.splice(idx, 1);
+}
+
+function addFeatureFromInput() {
+  const v = featureInput.value;
+  if (v !== null && !isNaN(v) && !form.features.includes(v)) {
+    form.features.push(v);
+  }
+  featureInput.value = null;
+}
+
+// ── Aplicativo (typeApplication) ─────────────────────────────────────────────
+function applicationName(appId: number): string {
+  return typeApplication.find(a => a.id === appId)?.name ?? '—';
+}
 
 const tabs = [
   { id: 'config', label: 'Configuración', iconPath: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
