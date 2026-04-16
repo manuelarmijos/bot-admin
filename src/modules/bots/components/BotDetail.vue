@@ -46,12 +46,14 @@
               <p class="text-white font-semibold text-sm">{{ bot.phone }}</p>
             </div>
             <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-3 border border-white/10">
-              <p class="text-white/50 text-xs mb-0.5">TTL</p>
-              <p class="text-white font-semibold text-sm">{{ bot.ttl ?? 150 }}s</p>
+              <p class="text-white/50 text-xs mb-0.5">Aplicativo</p>
+              <p class="text-white font-semibold text-sm truncate">{{ applicationName(bot.applicationId) }}</p>
             </div>
             <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-3 border border-white/10">
               <p class="text-white/50 text-xs mb-0.5">País</p>
-              <p class="text-white font-semibold text-sm">{{ bot.countryCode ?? '—' }}</p>
+              <p class="text-white font-semibold text-sm">
+                {{ botCountryFlag(bot.countryCode) }} {{ bot.countryCode ?? '—' }}
+              </p>
             </div>
           </div>
         </div>
@@ -223,12 +225,7 @@
                   </div>
 
                   <!-- Info de solo lectura -->
-                  <div class="grid grid-cols-3 gap-2 pt-1 border-t border-gray-100">
-                    <div class="bg-gray-50 rounded-xl p-2.5 col-span-2">
-                      <p class="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">Aplicativo</p>
-                      <p class="text-xs font-semibold text-gray-700">{{ applicationName(bot.applicationId) }}</p>
-                      <p class="text-[10px] text-gray-400 font-mono">{{ bot.applicationId }}</p>
-                    </div>
+                  <div class="pt-1 border-t border-gray-100">
                     <div class="bg-gray-50 rounded-xl p-2.5">
                       <p class="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">Actualizado</p>
                       <p class="text-xs font-semibold text-gray-600">{{ bot.updatedAt ? formatDate(bot.updatedAt) : '—' }}</p>
@@ -652,6 +649,10 @@ function addFeatureFromInput() {
 // ── Aplicativo (typeApplication) ─────────────────────────────────────────────
 function applicationName(appId: number): string {
   return typeApplication.find(a => a.id === appId)?.name ?? '—';
+}
+
+function botCountryFlag(dial: string | undefined): string {
+  return COUNTRIES.find(c => c.dial === dial)?.flag ?? '';
 }
 
 const tabs = [
